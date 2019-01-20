@@ -60,11 +60,13 @@ def clean_text(text):
     text = re.sub(r"[-()\"#/@;:<>{}+=~|.?,]", "", text)
     return text
 
+
 # 1.6 Cleaning the questions
 clean_questions = []
 
 for question in questions:
     clean_questions.append(clean_text(question))    
+
 
 # 1.7 Cleaning the answers
 clean_answers = []
@@ -73,7 +75,22 @@ for answer in answers:
     clean_answers.append(clean_text(answer))
 
 
+# 1.8 Creating a dict that maps each word to its number of occurences
+word2count = {}
 
+for question in clean_questions:
+    for word in question.split():
+        if word not in word2count:
+            word2count[word] = 1
+        else:
+            word2count[word] += 1
+
+for answer in clean_answers:
+    for word in answer.split():
+        if word not in word2count:
+            word2count[word] = 1
+        else:
+            word2count[word] += 1
 
 
 
