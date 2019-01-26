@@ -93,7 +93,44 @@ for answer in clean_answers:
             word2count[word] += 1
 
 
+# 1.9 Filtering non frequent words by creating two dictionaries that 
+# map the questions words and the answers words to a unique integer
+treshold = 20
 
+questionswords2int = {}
+word_number = 0
+for word, count in word2count.items():
+    if count >= treshold:
+        questionswords2int[word] = word_number
+        word_number += 1
+
+answerswords2int = {}
+word_number = 0
+for word, count in word2count.items():
+    if count >= treshold:
+        answerswords2int[word] = word_number
+        word_number += 1
+
+# return: two identical dictionaries
+
+
+# 1.10 Tokenization: adding the last tokens to these two dictionaries
+""" 
+Tokens are usefull to encoder and decoder with seq2seq model. 
+SOS - start of string
+EOS - end of string
+OUT - token == trashold. In this case is 5% of non frequent words
+"""
+tokens = ['<PAD>', '<EOS>', '<OUT>', '<SOS>']
+
+for token in tokens:
+    questionswords2int[token] = len(questionswords2int) +1
+
+for token in tokens:
+    answerswords2int[token] = len(answerswords2int) +1
+    
+
+# 1.11 
 
 
 
