@@ -130,7 +130,10 @@ for token in tokens:
     answerswords2int[token] = len(answerswords2int) +1
     
 
-# 1.11 
+# 1.11 Creating the inverse dictionary of the answerswords2int dictionary
+# w == word; i == int; w_i - values in dict, w - keys in dict
+# nice trick to inverse dict!
+answersints2word = {w_i: w for w, w_i in answerswords2int.items()}
 
 
 
