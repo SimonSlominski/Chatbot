@@ -136,6 +136,11 @@ for token in tokens:
 answersints2word = {w_i: w for w, w_i in answerswords2int.items()}
 
 
+# 1.12 Adding the 'End of string' token to the end of every answer
+# Remember to add 'space' between last word in line and '<EOS>' token
+for i in range(len(clean_answers)):
+    clean_answers[i] += ' <EOS>'
+
 
 
 
