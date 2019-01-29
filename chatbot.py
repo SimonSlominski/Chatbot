@@ -187,3 +187,47 @@ for i, question_int in enumerate(questions_int):
             sorted_clean_answers.append(answers_int[i])
 """
 
+
+
+# Part 2 - Building the Seq2seq model
+
+# 2.1 Creating placeholders for the inputs and the targets
+# [None, None] = 2 dimension array
+# targets = answers
+# lr = learning rate
+# keep_prob = dropout rate
+
+def model_inputs():
+    inputs = tf.placeholder(tf.int32, [None, None], name = 'input')
+    targets = tf.placeholder(tf.int32, [None, None], name = 'target')
+    lr = tf.placeholder(tf.float32, name = 'learning_rate')
+    keep_prob = tf.placeholder(tf.float32, name = 'keep_prob')
+    return inputs, targets, lr, keep_prob
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
