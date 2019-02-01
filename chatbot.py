@@ -205,8 +205,20 @@ def model_inputs():
     return inputs, targets, lr, keep_prob
 
 
+# 2.2 Preprocessing the target
+# step 1 define size of batches (numbers of answers) and add <SOS> token to 
+# each batch
 
-
+def preprocess_targets(targets, word2int, batch_size):
+    # batch_size = number of lines
+    # 1 = number of column
+    left_side = tf.fill([batch_size, 1], word2int['<SOS>'])
+    # right_side = lines without last column, last token
+    right_side = tf.strided_slice(targets, [0,0], [batch_size, -1], [1,1])
+    # 1 = horizontal axis, put 0 for vertical axis
+    preprocessed_targets = tf.concat([left_side, right_side], 1)
+    # return: reformated target
+    return preprocessed_targets
 
 
 
