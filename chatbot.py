@@ -223,7 +223,7 @@ def preprocess_targets(targets, word2int, batch_size):
 
 # 2.3 Creating the Encoder RNN Layer
 # Creating architecture of seq2seq model (Encoder and Decoder)
-def encoder_rnn_layer(rnn_inputs, rnn_size, num_layers, keep_prob, sequence_length):
+def encoder_rnn(rnn_inputs, rnn_size, num_layers, keep_prob, sequence_length):
     lstm = tf.contrib.rnn.BasicLSTMCell(rnn_size)
     lstm_dropout = tf.contrib.rnn.DropoutWrapper(lstm, input_keep_prob = keep_prob)
     encoder_cell = tf.contrib.rnn.MultiRNNCell([lstm_dropout] * num_layers)
@@ -256,6 +256,26 @@ def decode_training_set(encoder_state, decoder_cell, decoder_embedded_input, seq
     return output_function(decoder_output_dropout)
 
 
+# 2.5 Decoding the test/validation set
+def decode_test_set(encoder_state, decoder_cell, decoder_embeddings_matrix, sos_id, eos_id, maximum_length, num_words, decoding_scope, output_function, keep_prob, batch_size):
+    attention_states = tf.zeros([batch_size, 1, decoder_cell.output_size])
+    attention_keys, attention_values, attention_score_function, attention_construct_function = tf.contrib.seq2seq.prepare_attention(attention_states, attention_option = "bahdanau", num_units = decoder_cell.output_size)
+    test_decoder_function = tf.contrib.seq2seq.attention_decoder_fn_inference(output_function,
+                                                                              encoder_state[0],
+                                                                              attention_keys,
+                                                                              attention_values,
+                                                                              attention_score_function,
+                                                                              attention_construct_function,
+                                                                              decoder_embeddings_matrix,
+                                                                              sos_id,
+                                                                              eos_id,
+                                                                              maximum_length,
+                                                                              num_words,
+                                                                              name = "attn_dec_inf")
+    test_predictions, decoder_final_state, decoder_final_context_state = tf.contrib.seq2seq.dynamic_rnn_decoder(decoder_cell,
+                                                                                                                test_decoder_function,
+                                                                                                                scope = decoding_scope)
+    return test_predictions
     
     
     
