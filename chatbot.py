@@ -338,7 +338,36 @@ def seq2seq_model(inputs,targets, keep_prob, batch_size, sequence_length, answer
     return training_predictions, test_predictions
 
 
+
 # Part 3 - Training the Seq2seq model
+
+# 3.1 Setting the hyperparameters
+# epchos = one whole iteration of the training
+
+epochs = 100
+batch_size = 64
+rnn_size = 512
+num_layers = 3
+encoding_embedding_size = 512
+decoding_embedding_size = 512
+learning_rate = 0.01
+learning_rate_decay = 0.9
+min_learning_rate = 0.0001
+keep_probability = 0.5
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
