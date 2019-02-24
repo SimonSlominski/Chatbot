@@ -356,6 +356,13 @@ min_learning_rate = 0.0001
 keep_probability = 0.5
 
 
+# 3.2 Defining a session
+tf.reset_default_graph()
+session = tf.InteractiveSession()
+
+
+
+
 
 
 
