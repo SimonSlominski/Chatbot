@@ -361,6 +361,10 @@ tf.reset_default_graph()
 session = tf.InteractiveSession()
 
 
+# 3.3 Loading the model inputs
+inputs, targets, lr, keep_prob = model_inputs()
+
+
 
 
 
