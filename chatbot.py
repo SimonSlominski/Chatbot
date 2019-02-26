@@ -369,6 +369,8 @@ inputs, targets, lr, keep_prob = model_inputs()
 sequence_length = tf.placeholder_with_default(25, None, name = 'sequence_length')
 
 
+# 3.5 Getting the shape of the inputs tensor
+input_shape = tf.shape(inputs)
 
 
 
