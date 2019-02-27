@@ -322,7 +322,7 @@ def seq2seq_model(inputs,targets, keep_prob, batch_size, sequence_length, answer
                                                               answers_num_words+1,
                                                               encoder_embedding_size,
                                                               initializer = tf.random_uniform_initializer(0,1))
-    encoder_state = encoder_rnn_layer(encoder_embedded_input, rnn_size, num_layers, keep_prob, sequence_length)
+    encoder_state = encoder_rnn(encoder_embedded_input, rnn_size, num_layers, keep_prob, sequence_length)
     preprocessed_targets = preprocess_targets(targets, questionswords2int, batch_size)
     decoder_embedded_matrix = tf.Variable(tf.random_uniform([questions_num_words+1, decoder_embedding_size], 0, 1))
     decoder_embedded_input = tf.nn.embedding_lookup(decoder_embedded_matrix, preprocessed_targets)
@@ -373,11 +373,19 @@ sequence_length = tf.placeholder_with_default(25, None, name = 'sequence_length'
 input_shape = tf.shape(inputs)
 
 
-
-
-
-
-
+# 3.6 Getting the training and test predictions
+training_predictions, test_predictions = seq2seq_model(tf.reverse(inputs, [-1]),
+                                                       targets,
+                                                       keep_prob,
+                                                       batch_size,
+                                                       sequence_length,
+                                                       len(answerswords2int),
+                                                       len(questionswords2int),
+                                                       encoding_embedding_size,
+                                                       decoding_embedding_size,
+                                                       rnn_size,
+                                                       num_layers,
+                                                       questionswords2int)
 
 
 
