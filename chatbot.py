@@ -520,6 +520,10 @@ saver = tf.train.Saver()
 server.restore(session, checkpoint)
 
 
+# 4.2 Converting the questions from strings to list of encoding integers
+def convert_string2int(question, word2int):
+    question = clean_text(question)
+    return [word2int.get(word, word2int['<OUT>']) for word in question.split()]
 
 
 
