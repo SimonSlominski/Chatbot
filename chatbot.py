@@ -51,15 +51,16 @@ def clean_text(text):
     text = re.sub(r"that's", "that is", text)
     text = re.sub(r"what's", "what is", text)
     text = re.sub(r"where's", "where is", text)
+    text = re.sub(r"how's", "how is", text)
     text = re.sub(r"\'ll", " will", text)
     text = re.sub(r"\'ve", " have", text)
     text = re.sub(r"\'re", " are", text)
     text = re.sub(r"\'d", " would", text)
+    text = re.sub(r"n't", " not", text)
     text = re.sub(r"won't", "will not", text)
     text = re.sub(r"can't", "cannot", text)
-    text = re.sub(r"[-()\"#/@;:<>{}+=~|.?,]", "", text)
+    text = re.sub(r"[-()\"#/@;:<>{}`+=~|.!?,]", "", text)
     return text
-
 
 # 1.6 Cleaning the questions
 clean_questions = []
@@ -75,7 +76,25 @@ for answer in answers:
     clean_answers.append(clean_text(answer))
 
 
-# 1.8 Creating a dict that maps each word to its number of occurences
+# 1.8 Filtering out the questions and answers that are too short or too long
+short_questions = []
+short_answers = []
+i = 0
+for question in clean_questions:
+    if 2 <= len(question.split()) <= 25:
+        short_questions.append(question)
+        short_answers.append(clean_answers[i])
+    i += 1
+clean_questions = []
+clean_answers = []
+i = 0
+for answer in short_answers:
+    if 2 <= len(answer.split()) <= 25:
+        clean_answers.append(answer)
+        clean_questions.append(short_questions[i])
+    i += 1
+
+# 1.9 Creating a dict that maps each word to its number of occurences
 word2count = {}
 
 for question in clean_questions:
@@ -93,28 +112,28 @@ for answer in clean_answers:
             word2count[word] += 1
 
 
-# 1.9 Filtering non frequent words by creating two dictionaries that 
+# 1.10 Filtering non frequent words by creating two dictionaries that 
 # map the questions words and the answers words to a unique integer
-treshold = 20
-
+threshold_questions = 15
 questionswords2int = {}
 word_number = 0
 for word, count in word2count.items():
-    if count >= treshold:
+    if count >= threshold_questions:
         questionswords2int[word] = word_number
         word_number += 1
-
+        
+threshold_answers = 15
 answerswords2int = {}
 word_number = 0
 for word, count in word2count.items():
-    if count >= treshold:
+    if count >= threshold_answers:
         answerswords2int[word] = word_number
         word_number += 1
 
 # return: two identical dictionaries
 
 
-# 1.10 Tokenization: adding the last tokens to these two dictionaries
+# 1.11 Tokenization: adding the last tokens to these two dictionaries
 """ 
 Tokens are usefull to encoder and decoder with seq2seq model. 
 SOS - start of string
@@ -130,19 +149,19 @@ for token in tokens:
     answerswords2int[token] = len(answerswords2int) +1
     
 
-# 1.11 Creating the inverse dictionary of the answerswords2int dictionary
+# 1.12 Creating the inverse dictionary of the answerswords2int dictionary
 # w == word; i == int; w_i - values in dict, w - keys in dict
 # nice trick to inverse dict!
 answersints2word = {w_i: w for w, w_i in answerswords2int.items()}
 
 
-# 1.12 Adding the 'End of string' token to the end of every answer
+# 1.13 Adding the 'End of string' token to the end of every answer
 # Remember to add 'space' between last word in line and '<EOS>' token
 for i in range(len(clean_answers)):
     clean_answers[i] += ' <EOS>'
 
 
-# 1.13 Translating all the questions and the answers into integers
+# 1.14 Translating all the questions and the answers into integers
 # and replacing all the words that were filtered out by <OUT>
 questions_into_int = []
 
@@ -167,7 +186,7 @@ for answer in clean_answers:
     answers_into_int.append(ints)
 
 
-# 1.14 Sorting questions and answers by the length of questions
+# 1.15 Sorting questions and answers by the length of questions
 sorted_clean_questions = []
 sorted_clean_answers = []
 
@@ -345,12 +364,12 @@ def seq2seq_model(inputs,targets, keep_prob, batch_size, sequence_length, answer
 # epchos = one whole iteration of the training
 
 epochs = 100
-batch_size = 64
-rnn_size = 512
+batch_size = 32
+rnn_size = 1024
 num_layers = 3
-encoding_embedding_size = 512
-decoding_embedding_size = 512
-learning_rate = 0.01
+encoding_embedding_size = 1024
+decoding_embedding_size = 1024
+learning_rate = 0.001
 learning_rate_decay = 0.9
 min_learning_rate = 0.0001
 keep_probability = 0.5
@@ -434,7 +453,7 @@ batch_index_check_validation_loss = ((len(training_questions)) // batch_size // 
 total_training_loss_error = 0
 list_validation_loss_error = []
 early_stopping_check = 0
-early_stopping_stop = 1000
+early_stopping_stop = 100
 checkpoint = "chatbot_weights.ckpt" # For Windows, replace this line of code by: checkpoint = "./chatbot_weights.ckpt"
 session.run(tf.global_variables_initializer())
 for epoch in range(1, epochs + 1):
@@ -491,18 +510,48 @@ print("Game Over")
 
 
 
+# Part 4 - Testing the SEQ2SEQ Model
+
+# 4.1 Loading the weights and run the session
+checkpoint = "./chatbot_weights.ckpt"
+session = tf.InteractiveSession()
+session.run(tf.global_variables_initializer())
+saver = tf.train.Saver()
+server.restore(session, checkpoint)
 
 
+# 4.2 Converting the questions from strings to list of encoding integers
+def convert_string2int(question, word2int):
+    question = clean_text(question)
+    return [word2int.get(word, word2int['<OUT>']) for word in question.split()]
 
 
+# 4.3 Setting up the chat
+while(True):
+    question = input("You: ")
+    if question == "Goodbye":
+        break
+    question = convert_string2int(question, questionswords2int)
+    question = question + [questionswords2int['<PAD>']] * (20 - len(question))
+    fake_batch = np.zeros((batch_sieze, 20))
+    fake_batch[0] = question
+    predicted_answer = session.run(test_predictions, {inputs: fake_batch,
+                                                      keep_prob: 0.5})[0]
+    answer = ''
+    for i in np.argmax(predicted_answer, 1):
+        if answersints2word[i] == 'i':
+            token = ' I'
+        elif answersints2word[i] == '<EOS>':
+            token = '.'
+        elif answersints2word[i] == '<OUT>':
+            token = 'out'
+        else:
+            token = ' ' + answersints2word[i]
+        answer += token
+        if token == '.':
+            break
+    print('ChatBot: ' + answer)
 
 
-
-
-
-
-
-
-
-
+# To run the chatbot, run all code without "training part" = run Part 1, 2, 4.
 
